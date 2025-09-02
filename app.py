@@ -17,7 +17,7 @@ st.title("🌟 DermAI: Tu piel bajo cuidado inteligente mediante visión por com
 def load_cnn_model():
     try:
         # Asegúrate de que la ruta al modelo sea correcta
-        model = load_model("/content/skin-lesion-ai/modelo_lunares.h5")
+        model = load_model("/modelo_lunares.h5")
         return model
     except Exception as e:
         st.error(f"Error al cargar el modelo: {e}")
