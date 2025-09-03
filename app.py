@@ -9,12 +9,6 @@ import matplotlib.pyplot as plt # Importar matplotlib
 
 
 # ===============================
-# Configuración de la app
-# ===============================
-st.set_page_config(page_title="DermAI", layout="centered")
-
-
-# ===============================
 # Cargar modelo
 # ===============================
 # Verificar si el modelo ya está cargado para evitar recargarlo
