@@ -9,13 +9,19 @@ import matplotlib.pyplot as plt # Importar matplotlib
 
 
 # ===============================
+# Configuración de la app
+# ===============================
+st.set_page_config(page_title="DermAI", layout="centered")
+
+
+# ===============================
 # Cargar modelo
 # ===============================
 # Verificar si el modelo ya está cargado para evitar recargarlo
 @st.cache_resource
 def load_trained_model():
     try:
-        model = load_model("modelo_lunares.h5") # Asumiendo que el modelo está en el mismo directorio o en una ruta accesible
+        model = load_model("/content/skin-lesion-ai/modelo_lunares.h5") # Asumiendo que el modelo está en el mismo directorio o en una ruta accesible
         return model
     except Exception as e:
         st.error(f"Error al cargar el modelo: {e}")
@@ -145,8 +151,8 @@ def predecir_imagen(pil_img):
 
     # CNN
     try:
-        img_resized = pil_img.resize(img_size)
-        x = image.img_to_array(img_resized) / 255.0
+        img_resized = pil_img.resize((224, 224)) # Usar 224x224 como en el código original proporcionado
+        x = img_to_array(img_resized) / 255.0
         x = np.expand_dims(x, axis=0)
 
         pred = model.predict(x)
@@ -167,7 +173,7 @@ def predecir_imagen(pil_img):
 # ===============================
 # Interfaz de Streamlit
 # ===============================
-st.title("DermaAI: Tu piel bajo cuidado inteligente mediante vision por computadora")
+st.title("🌟 DermAI: Tu piel bajo cuidado inteligente mediante visión por computadora 🌟")
 st.write("Sube una imagen de una lesión cutánea para obtener una predicción.")
 
 uploaded_file = st.file_uploader("Elige una imagen...", type=["jpg", "jpeg", "png", "bmp", "gif"])
@@ -216,14 +222,17 @@ if uploaded_file is not None:
 - Reaplica después de nadar o sudar.
 - Mantente hidratado.
 """
-        abcde_ok = abcde_results.get("error") is None and -1 not in abcde_results.values()
+        # Ajustar las condiciones de evaluación para que coincidan con los valores de retorno de ABCDE
+        abcde_ok = abcde_results.get("error") is None and all(v != -1.0 and v != -1 for v in [abcde_results['asimetria'], abcde_results['bordes'], abcde_results['colores'], abcde_results['diametro']])
+
 
         if clase_pred == "Error CNN":
              mensaje_final = "❌ Error en la predicción CNN. No se pudo realizar una evaluación completa."
         elif not abcde_ok:
              mensaje_final = f"⚠️ Predicción CNN: **{clase_pred}**. Error en el análisis ABCDE. Considera consultar a un especialista si tienes dudas."
-        elif clase_pred == "malignos" or abcde_results["asimetria"] > 0.1 or abcde_results["bordes"] > 0.05 or abcde_results["colores"] > 50 or abcde_results["diametro"] > 100:
-            mensaje_final = "**🔴 Posible lesión maligna.** **Debes acudir al dermatólogo lo antes posible.**"
+        # Ajustar los umbrales de ABCDE según sea necesario para tu modelo/datos
+        elif clase_pred == "malignos" or (abcde_ok and (abcde_results["asimetria"] > 0.1 or abcde_results["bordes"] > 0.05 or abcde_results["colores"] > 5000 or abcde_results["diametro"] > 100)):
+             mensaje_final = "**🔴 Posible lesión maligna.** **Debes acudir al dermatólogo lo antes posible.**"
         elif clase_pred == "sospechosos":
             mensaje_final = "**🟠 Lesión sospechosa.** Vigílala y consulta a un dermatólogo."
         else:
